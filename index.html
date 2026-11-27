@@ -463,7 +463,7 @@ body{
   }
   function reset(){ state = { door:START_DOOR, phase:"normal", openedAt:Date.now(), c2:0 }; save(); render(); }
 
-  /* hidden gestures: hold the door number = one door back, hold the logo = start over */
+  /* hidden gestures: hold the DOOR label = one door back, hold the logo = start over */
   function holdable(el, ms, fn){
     var t = null, fired = false;
     function clear(){ if (t){ clearTimeout(t); t = null; } }
@@ -471,18 +471,14 @@ body{
     ["pointerup","pointercancel","pointerleave"].forEach(function(e){ el.addEventListener(e, clear); });
     el.addEventListener("contextmenu", function(e){ e.preventDefault(); });
   }
-  holdable(numC, 800, back);
+  holdable(lblC, 800, back);
   holdable($("brand"), 1200, reset);
 
-  // tapping anywhere on the lower half of the screen presses the big button
-  var tapStart = null;
-  document.addEventListener("pointerdown", function(e){ tapStart = { x:e.clientX, y:e.clientY, t:Date.now() }; });
-  document.addEventListener("pointercancel", function(){ tapStart = null; });
-  document.addEventListener("pointerup", function(e){
-    var st = tapStart; tapStart = null;
-    if (!st || e.target.closest(".skip")) return;
-    if (Math.abs(e.clientX - st.x) > 20 || Math.abs(e.clientY - st.y) > 20 || Date.now() - st.t > 500) return;   // a swipe or a hold, not a tap
-    if (e.clientY < window.innerHeight / 2 && !e.target.closest("#go")) return;
+  // any touch below the top 25% of the screen presses the big button, the moment the finger lands
+  var TOP_DEAD_ZONE = 0.25;
+  document.addEventListener("pointerdown", function(e){
+    if (e.target.closest(".skip, #lbl, .brand")) return;            // top buttons, logo (hold = restart), DOOR label (hold = back)
+    if (e.clientY < window.innerHeight * TOP_DEAD_ZONE) return;
     go.classList.add("tap"); setTimeout(function(){ go.classList.remove("tap"); }, 120);
     press();
   });
