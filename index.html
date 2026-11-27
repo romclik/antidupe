@@ -203,8 +203,8 @@ body{
   function bgFor(door){
     var c2 = chase2();
     if (c2){
-      if (door === c2.start) return "140";
-      if (door > c2.start && door < c2.end) return (door - c2.start <= 2) ? "141-145" : "146-149";
+      // second chase: one background for the whole chase (corridor + chase doors), no changes in the middle
+      if (door >= c2.start && door < c2.end) return "140";
     }
     for (var i=0;i<BGS.length;i++) if (door>=BGS[i][0] && door<=BGS[i][1]) return BGS[i][2];
     return "200";
