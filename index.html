@@ -118,7 +118,7 @@ body{
   cursor:pointer;transition:transform .12s ease,filter .12s ease;
   white-space:nowrap;overflow:hidden;
 }
-.go:active{transform:scale(.985);filter:brightness(.88)}
+.go:active,.go.tap{transform:scale(.985);filter:brightness(.88)}
 .go:disabled{cursor:default;transform:none;filter:none}
 .go:focus-visible{outline:calc(4 * var(--u)) solid #fff;outline-offset:calc(5 * var(--u))}
 .go.small{font-size:calc(56 * var(--u))}
@@ -474,7 +474,19 @@ body{
   holdable(numC, 800, back);
   holdable($("brand"), 1200, reset);
 
-  go.addEventListener("click", press);
+  // tapping anywhere on the lower half of the screen presses the big button
+  var tapStart = null;
+  document.addEventListener("pointerdown", function(e){ tapStart = { x:e.clientX, y:e.clientY, t:Date.now() }; });
+  document.addEventListener("pointercancel", function(){ tapStart = null; });
+  document.addEventListener("pointerup", function(e){
+    var st = tapStart; tapStart = null;
+    if (!st || e.target.closest(".skip")) return;
+    if (Math.abs(e.clientX - st.x) > 20 || Math.abs(e.clientY - st.y) > 20 || Date.now() - st.t > 500) return;   // a swipe or a hold, not a tap
+    if (e.clientY < window.innerHeight / 2 && !e.target.closest("#go")) return;
+    go.classList.add("tap"); setTimeout(function(){ go.classList.remove("tap"); }, 120);
+    press();
+  });
+  go.addEventListener("click", function(e){ if (e.detail === 0) press(); });   // keyboard (Enter / Space)
   document.addEventListener("keydown", function(e){
     if (e.key === "Backspace"){ back(); }
   });
