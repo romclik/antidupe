@@ -55,7 +55,7 @@ body{
 .bg i.on{opacity:1}
 /* the pan wrapper drifts right, then left, forever. It is separate from the image layers,
    so swapping the background image never restarts or jumps the movement. */
-.pan{position:absolute;top:-2%;bottom:-2%;left:-6%;right:-6%;animation:drift 50s ease-in-out infinite alternate;will-change:transform}
+.pan{position:absolute;top:-2%;bottom:-2%;left:-6%;right:-6%;animation:drift 28s ease-in-out infinite alternate;will-change:transform}
 @keyframes drift{from{transform:translate3d(-4.5%,0,0)}to{transform:translate3d(4.5%,0,0)}}
 .bg::after{ /* scrim keeps white type readable on brighter rooms */
   content:"";position:absolute;inset:0;
@@ -88,6 +88,7 @@ body{
   font-size:calc(36 * var(--s,1) * var(--u));line-height:calc(48 * var(--s,1) * var(--u));text-align:center;white-space:nowrap;
 }
 
+.room.normal{opacity:.4}
 .since{
   margin-top:calc(10 * var(--s,1) * var(--u));min-height:calc(34 * var(--u));text-align:center;white-space:nowrap;
   font-size:calc(28 * var(--u));line-height:calc(34 * var(--u));color:var(--dim);
@@ -308,13 +309,11 @@ body{
     document.querySelector(".bg").style.setProperty("--scrim", SCRIM[key] || 0);
   }
 
+  function roomName(n){ return SPECIAL[n] || "Normal room"; }
   function hintFor(door){
     var n = door + 1;
-    if (state.phase === "chase") return door === CHASE_END - 1 ? SPECIAL[CHASE_END] : "";
-    if (n > LAST_DOOR || !SPECIAL[n]) return "";
-    if (n > CHASE_FIRST && n < CHASE_END) return "";   // inside the chase: no hints
-    if (n === CHASE_FIRST) return "";                   // start button handles this
-    return SPECIAL[n];
+    if (n > LAST_DOOR) return "";
+    return roomName(n) + " (" + n + ")";
   }
 
   var shown = { door:null, phase:null };
@@ -335,7 +334,8 @@ body{
     paint(numC, String(door), NUM_SIZE, String(door));
 
     var name = SPECIAL[door] || "";
-    roomEl.textContent = name;
+    roomEl.textContent = roomName(door);
+    roomEl.classList.toggle("normal", !name);
 
     var hint = hintFor(door);
     nextEl.classList.toggle("show", !!hint);
